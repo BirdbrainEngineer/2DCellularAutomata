@@ -1,7 +1,7 @@
 #pragma kernel GGOL
 
 RWTexture2D<float4> result;
-sampler2D previous;
+sampler2D input;
 float width;
 float height;
 float DPBuffer[2];
@@ -11,20 +11,20 @@ int rules[9];
 void GGOL(uint3 id : SV_DispatchThreadID)
 {
     float2 deltaPixel = float2(DPBuffer[0], DPBuffer[1]);
-    float2 position = float2(id.x / width, id.y / height);
+    float2 position = float2((id.x) / width, (id.y) / height);
     float4 neighbors = float4(0.0, 0.0, 0.0, 0.0);
     float nextState = 0.0;
-    int currentState = (int)(tex2Dlod(previous, float4(position.x, position.y, 0, 0)).a);
+    int currentState = (int)(tex2Dlod(input, float4(position.x, position.y, 0, 0)).a);
 
     //add up all neighboring cells
-    neighbors += tex2Dlod(previous, float4(position.x - deltaPixel.x, position.y + deltaPixel.y, 0, 0));
-    neighbors += tex2Dlod(previous, float4(position.x, position.y + deltaPixel.y, 0, 0));
-    neighbors += tex2Dlod(previous, float4(position.x + deltaPixel.x, position.y + deltaPixel.y, 0, 0));
-    neighbors += tex2Dlod(previous, float4(position.x - deltaPixel.x, position.y, 0, 0));
-    neighbors += tex2Dlod(previous, float4(position.x + deltaPixel.x, position.y, 0, 0));
-    neighbors += tex2Dlod(previous, float4(position.x - deltaPixel.x, position.y - deltaPixel.y, 0, 0));
-    neighbors += tex2Dlod(previous, float4(position.x, position.y - deltaPixel.y, 0, 0));
-    neighbors += tex2Dlod(previous, float4(position.x + deltaPixel.x, position.y - deltaPixel.y, 0, 0));
+    neighbors += tex2Dlod(input, float4(position.x - deltaPixel.x, position.y + deltaPixel.y, 0, 0));
+    neighbors += tex2Dlod(input, float4(position.x, position.y + deltaPixel.y, 0, 0));
+    neighbors += tex2Dlod(input, float4(position.x + deltaPixel.x, position.y + deltaPixel.y, 0, 0));
+    neighbors += tex2Dlod(input, float4(position.x - deltaPixel.x, position.y, 0, 0));
+    neighbors += tex2Dlod(input, float4(position.x + deltaPixel.x, position.y, 0, 0));
+    neighbors += tex2Dlod(input, float4(position.x - deltaPixel.x, position.y - deltaPixel.y, 0, 0));
+    neighbors += tex2Dlod(input, float4(position.x, position.y - deltaPixel.y, 0, 0));
+    neighbors += tex2Dlod(input, float4(position.x + deltaPixel.x, position.y - deltaPixel.y, 0, 0));
     int count = (int)(neighbors.a); //use alpha value as the total number of neighbors
 
     //rules meaning:
@@ -42,6 +42,7 @@ void GGOL(uint3 id : SV_DispatchThreadID)
             nextState = 1.0;
         }
     }
+    //if(count >= 4) {nextState = 1.0;} // trying to debug but yea...
 
     result[id.xy] = float4(nextState, nextState, nextState, nextState);
 }

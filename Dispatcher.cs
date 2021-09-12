@@ -16,8 +16,12 @@ public class Dispatcher : MonoBehaviour
 
     public bool enableSim = false;
 
-    //0=transition to dead, 1=transition to alive if dead, 2=survive if alive, 3=transition to alive if dead and survive if alive
-    public int[] rules = {0, 0, 0, 0, 0, 0, 0, 0};
+    //rules meaning:
+    //0: alive = dead   ||  dead = dead
+    //1: alive = dead   ||  dead = alive
+    //2: alive = alive  ||  dead = dead
+    //3: alive = alive  ||  dead = alive
+    public int[] rules = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     private int kernelID;
 
@@ -43,13 +47,19 @@ public class Dispatcher : MonoBehaviour
         Board = new RenderTexture(boardWidth, boardHeight, 24);
         PreviousBoard = new RenderTexture(boardWidth, boardHeight, 24);
         Board.enableRandomWrite = true;
+        Board.wrapMode = TextureWrapMode.Repeat;
+        PreviousBoard.wrapMode = TextureWrapMode.Repeat;
+        Board.useMipMap = false;
+        PreviousBoard.useMipMap = false;
         Board.Create();
         PreviousBoard.Create();
     }
 
     private void UpdateShader(){
+        float[] dp = {1.0f / (float)boardWidth, 1.0f / (float)boardHeight};
         GGol.SetFloat("width", (float)boardWidth);
         GGol.SetFloat("height", (float)boardHeight);
         GGol.SetInts("rules", rules);
+        GGol.SetFloats("DPBuffer", dp);
     }
 }

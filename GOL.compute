@@ -1,14 +1,46 @@
-// Each #kernel tells which function to compile; you can have many kernels
-#pragma kernel CSMain
+#pragma kernel GGOL
 
-// Create a RenderTexture with enableRandomWrite flag and set it
-// with cs.SetTexture
-RWTexture2D<float4> Result;
+RWTexture2D<float4> result;
+sampler2D previous;
+float width;
+float height;
+float DPBuffer[2];
+int rules[9];
+//rules meaning:
+//0: alive = dead   ||  dead = dead
+//1: alive = dead   ||  dead = alive
+//2: alive = alive  ||  dead = dead
+//3: alive = alive  ||  dead = alive
 
-[numthreads(8,8,1)]
-void CSMain (uint3 id : SV_DispatchThreadID)
+[numthreads(8,8,1)]     //No changy... unless you know what you are doing
+void GGOL(uint3 id : SV_DispatchThreadID)
 {
-    // TODO: insert actual code here!
+    float2 deltaPixel = float2(DPBuffer[0], DPBuffer[1]);
+    float2 position = float2((id.x) / width, (id.y) / height);
+    float4 neighbors = float4(0.0, 0.0, 0.0, 0.0);
+    float nextState = 0.0;
+    int currentState = (int)tex2Dlod(previous, float4(position.x, position.y, 0, 0)).a;
 
-    Result[id.xy] = float4(id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 0.0);
+    neighbors += tex2Dlod(previous, float4(position.x - deltaPixel.x, position.y + deltaPixel.y, 0, 0));
+    neighbors += tex2Dlod(previous, float4(position.x, position.y + deltaPixel.y, 0, 0));
+    neighbors += tex2Dlod(previous, float4(position.x + deltaPixel.x, position.y + deltaPixel.y, 0, 0));
+    neighbors += tex2Dlod(previous, float4(position.x - deltaPixel.x, position.y, 0, 0));
+    neighbors += tex2Dlod(previous, float4(position.x + deltaPixel.x, position.y, 0, 0));
+    neighbors += tex2Dlod(previous, float4(position.x - deltaPixel.x, position.y - deltaPixel.y, 0, 0));
+    neighbors += tex2Dlod(previous, float4(position.x, position.y - deltaPixel.y, 0, 0));
+    neighbors += tex2Dlod(previous, float4(position.x + deltaPixel.x, position.y - deltaPixel.y, 0, 0));
+    int count = int(neighbors.a);
+
+    if(currentState == 0){
+        if(rules[count] == 1 || rules[count] == 3){
+            nextState = 1.0;
+        }
+    } 
+    else {
+        if(rules[count] >= 2.0){
+            nextState = 1.0;
+        }
+    }
+
+    result[id.xy] = float4(nextState, nextState, nextState, nextState);
 }

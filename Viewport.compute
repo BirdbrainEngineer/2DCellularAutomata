@@ -1,0 +1,15 @@
+
+#pragma kernel Viewport
+
+sampler2D board;
+RWTexture2D<float4> output;
+float2 viewportCoords;
+float deltaPixel;
+
+[numthreads(8,8,1)]
+void Viewport (uint3 id : SV_DispatchThreadID)
+{
+    float4 pixel = tex2Dlod(board, float4(viewportCoords.x + (id.x * deltaPixel), viewportCoords.y + (id.y * deltaPixel), 0, 0));
+    //Maybe some color effects here
+    output[id.xy] = pixel;
+}

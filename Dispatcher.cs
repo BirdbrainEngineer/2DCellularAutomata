@@ -25,7 +25,8 @@ public class Dispatcher : MonoBehaviour
     //3: alive = alive  ||  dead = alive
     public int[] rules = {0, 0, 2, 3, 0, 0, 0, 0, 0};   //Conway's Game of Life rules
 
-    private int kernelID;
+    private int kernelGGOL;
+    private int kernelViewport;
 
     private float nextUpdate;
 
@@ -33,13 +34,14 @@ public class Dispatcher : MonoBehaviour
 
     void Start()
     {
-        kernelID = GGol.FindKernel("GGOL");
+        kernelGGOL = GGol.FindKernel("GGOL");
         CreateTextures();
         if(input != null && input.width == board0.width && input.height == board0.height) { 
             Graphics.Blit(input, board0);
             Graphics.Blit(input, board1);
-        }
-        UpdateShader();
+        } else { print("Could not use input image - dimensions differ"); }
+        StartGGOL();
+        StartViewport();
         nextUpdate = Time.time + simSpeed;
     }
 
@@ -47,16 +49,16 @@ public class Dispatcher : MonoBehaviour
         if(enableSim && nextUpdate <= Time.time) {
             nextUpdate = Time.time + simSpeed;
             if(boardState){
-                GGol.SetTexture(kernelID, "result", board0);
-                GGol.SetTexture(kernelID, "input", board1);
+                GGol.SetTexture(kernelGGOL, "result", board0);
+                GGol.SetTexture(kernelGGOL, "input", board1);
                 boardState = false;
             }
             else {
-                GGol.SetTexture(kernelID, "result", board1);
-                GGol.SetTexture(kernelID, "input", board0);
+                GGol.SetTexture(kernelGGOL, "result", board1);
+                GGol.SetTexture(kernelGGOL, "input", board0);
                 boardState = true;
             }
-            GGol.Dispatch(kernelID, boardWidth / NUMTHREADS_X, boardHeight / NUMTHREADS_Y, 1);
+            GGol.Dispatch(kernelGGOL, boardWidth / NUMTHREADS_X, boardHeight / NUMTHREADS_Y, 1);
         }
     }
 
@@ -80,7 +82,7 @@ public class Dispatcher : MonoBehaviour
         board1.Create();
     }
 
-    private void UpdateShader(){
+    private void StartGGOL(){
         float[] deltaPixel = {1.0f / (float)boardWidth, 1.0f / (float)boardHeight, 0.0f, 0.0f};
         GGol.SetFloats("deltaPixel", deltaPixel);
         int[] paddedArray = new int[rules.Length * 4];  //making the rules array compatible with how the shader accepts data
@@ -94,6 +96,10 @@ public class Dispatcher : MonoBehaviour
         GGol.SetInts("rules", paddedArray);
         GGol.SetFloat("width", (float)boardWidth);
         GGol.SetFloat("height", (float)boardHeight);
+    }
+
+    private void StartViewport(){
+
     }
 }
 

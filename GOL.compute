@@ -5,13 +5,12 @@ RWTexture2D<float4> result;
 sampler2D input;
 float width;
 float height;
-float DPBuffer[2];
-int rules[9];
+float4 deltaPixel;
+int4 rules[9];
 
 [numthreads(8,8,1)]     //No changy... unless you know what you are doing
 void GGOL(uint3 id : SV_DispatchThreadID)
 {
-    float2 deltaPixel = float2(DPBuffer[0], DPBuffer[1]);
     float2 position = float2((id.x) / width, (id.y) / height);
     float4 neighbors = float4(0.0, 0.0, 0.0, 0.0);
     float nextState = 0.0;
@@ -34,16 +33,20 @@ void GGOL(uint3 id : SV_DispatchThreadID)
     //2: alive = alive  ||  dead = dead
     //3: alive = alive  ||  dead = alive
     if(currentState == 0){
-        if(rules[count] == 1 || rules[count] == 3){
+        if(rules[count].a == 1 || rules[count].a == 3){
             nextState = 1.0;
         }
     } 
     else {
-        if(rules[count] >= 2.0){
+        if(rules[count].a >= 2.0){
             nextState = 1.0;
         }
     }
-    //if(count >= 4) {nextState = 1.0;} // trying to debug but yea...
-
     result[id.xy] = float4(nextState, nextState, nextState, nextState);
 }
+
+
+
+
+
+

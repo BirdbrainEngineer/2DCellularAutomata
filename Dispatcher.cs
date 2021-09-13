@@ -81,10 +81,26 @@ public class Dispatcher : MonoBehaviour
     }
 
     private void UpdateShader(){
-        float[] deltaPixel = {1.0f / (float)boardWidth, 1.0f / (float)boardHeight};
-        GGol.SetFloats("DPBuffer", deltaPixel);
-        GGol.SetInts("rules", rules);
+        float[] deltaPixel = {1.0f / (float)boardWidth, 1.0f / (float)boardHeight, 0.0f, 0.0f};
+        GGol.SetFloats("deltaPixel", deltaPixel);
+        int[] paddedArray = new int[rules.Length * 4];  //making the rules array compatible with how the shader accepts data
+        for(int i = rules.Length - 1; i >= 0; i--){ 
+            int paddedIndex = i * 4;
+            for(int j = 0; j < 3; j++){
+                paddedArray[paddedIndex + j] = 0;
+            }
+            paddedArray[paddedIndex + 3] = rules[i];
+        }
+        GGol.SetInts("rules", paddedArray);
         GGol.SetFloat("width", (float)boardWidth);
         GGol.SetFloat("height", (float)boardHeight);
     }
 }
+
+
+
+
+
+
+
+

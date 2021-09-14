@@ -18,11 +18,13 @@ public class Dispatcher : MonoBehaviour
     public int boardWidth = 512;
     public int boardHeight = 512;
     public float simSpeed = 1.0f;
+    public float steppingFactor = 0.1f;
     public float zoom = 100.0f;
+    public int enableTiling = 1;
     public bool[] centerViewport = {false, false};
     public float[] viewportCoords = {0.0f, 0.0f};
     public bool enableSim = false;
-    public string rule;
+    public string rule = "B3S23";
     public int[] rules = {0, 0, 2, 3, 0, 0, 0, 0, 0};   //Conway's Game of Life rules
 
     private int kernelGGOL;
@@ -47,7 +49,6 @@ public class Dispatcher : MonoBehaviour
         if(enableSim && nextUpdate <= Time.time) {
             nextUpdate = Time.time + simSpeed;
             bool newRules = ParseRules();
-            if(newRules){ GGol.SetInts("rules", PadRules(rules)); }
             if(boardState){
                 GGol.SetTexture(kernelGGOL, "result", board0);
                 GGol.SetTexture(kernelGGOL, "input", board1);
@@ -58,11 +59,14 @@ public class Dispatcher : MonoBehaviour
                 GGol.SetTexture(kernelGGOL, "input", board0);
                 boardState = true;
             }
+            GGol.SetInts("rules", PadRules(rules));
+            GGol.SetFloat("steppingFactor", steppingFactor);
             GGol.Dispatch(kernelGGOL, boardWidth / NUMTHREADS_X, boardHeight / NUMTHREADS_Y, 1);
         }
     }
 
     private void OnRenderImage(RenderTexture src, RenderTexture dest){
+        output.Release();
         output = new RenderTexture(Screen.width, Screen.height, 24);
         output.enableRandomWrite = true;
         output.useMipMap = false;
@@ -70,16 +74,17 @@ public class Dispatcher : MonoBehaviour
         Viewport.SetTexture(kernelViewport, "output", output);
         Viewport.SetFloats("viewportCoords", resolveViewportCoords());
         Viewport.SetFloat("deltaPixel", (zoom / (float)boardWidth) / (float)output.width);
+        Viewport.SetInt("enableTiling", enableTiling);
         if(boardState){ Viewport.SetTexture(kernelViewport, "board", board1); }
         else { Viewport.SetTexture(kernelViewport, "board", board0); }
         Viewport.Dispatch(kernelViewport, output.width / NUMTHREADS_X, output.height / NUMTHREADS_Y, 1);
         Graphics.Blit(output, dest);
-        output.Release();
     }
 
     private void CreateTextures(){
         board0 = new RenderTexture(boardWidth, boardHeight, 24);
         board1 = new RenderTexture(boardWidth, boardHeight, 24);
+        output = new RenderTexture(Screen.width, Screen.height, 24);
         board0.enableRandomWrite = true;
         board1.enableRandomWrite = true;
         board0.useMipMap = false;
@@ -88,6 +93,7 @@ public class Dispatcher : MonoBehaviour
         board1.filterMode = FilterMode.Point;
         board0.Create();
         board1.Create();
+        output.Create();
     }
 
     private void StartGGOL(){

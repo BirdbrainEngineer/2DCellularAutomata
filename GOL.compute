@@ -7,14 +7,14 @@ float width;
 float height;
 float4 deltaPixel;
 int4 rules[9];
+float steppingFactor;
 
 [numthreads(8,8,1)]     //No changy... unless you know what you are doing
 void GGOL(uint3 id : SV_DispatchThreadID)
 {
     float2 position = float2((id.x) / width, (id.y) / height);
     float4 neighbors = float4(0.0, 0.0, 0.0, 0.0);
-    float nextState = 0.0;
-    int currentState = (int)(tex2Dlod(input, float4(position.x, position.y, 0, 0)).a);
+    float4 currentState = tex2Dlod(input, float4(position.x, position.y, 0, 0));
 
     //add up all neighboring cells
     neighbors += tex2Dlod(input, float4(position.x - deltaPixel.x, position.y + deltaPixel.y, 0, 0));
@@ -26,23 +26,34 @@ void GGOL(uint3 id : SV_DispatchThreadID)
     neighbors += tex2Dlod(input, float4(position.x, position.y - deltaPixel.y, 0, 0));
     neighbors += tex2Dlod(input, float4(position.x + deltaPixel.x, position.y - deltaPixel.y, 0, 0));
     int count = (int)(neighbors.a); //use alpha value as the total number of neighbors
-
+    float stateCount = currentState.r;  //positive numbers express how long the cell ahs been alive and vice versa
+    float nextState;
     //rules meaning:
     //0: alive = dead   ||  dead = dead
     //1: alive = dead   ||  dead = alive
     //2: alive = alive  ||  dead = dead
     //3: alive = alive  ||  dead = alive
-    if(currentState == 0){
+    if(int(currentState.a) == 0){
         if(rules[count].a == 1 || rules[count].a == 3){
             nextState = 1.0;
+            stateCount = steppingFactor;
+        }
+        else{
+            nextState = 0.0;
+            stateCount -= steppingFactor;
         }
     } 
     else {
         if(rules[count].a >= 2.0){
             nextState = 1.0;
+            stateCount += steppingFactor;
+        }
+        else{
+            nextState = 0.0;
+            stateCount = -steppingFactor;
         }
     }
-    result[id.xy] = float4(nextState, nextState, nextState, nextState);
+    result[id.xy] = float4(stateCount, nextState, nextState, nextState);
 }
 
 

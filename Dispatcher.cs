@@ -19,7 +19,8 @@ public class Dispatcher : MonoBehaviour
     public int boardHeight = 512;
     public float simSpeed = 1.0f;
     public float zoom = 100.0f;
-    public float[] viewportCoords = new float[2]{0.0f, 0.0f};
+    public bool[] centerViewport = {false, false};
+    public float[] viewportCoords = {0.0f, 0.0f};
     public bool enableSim = false;
     public string rule;
     public int[] rules = {0, 0, 2, 3, 0, 0, 0, 0, 0};   //Conway's Game of Life rules
@@ -67,7 +68,7 @@ public class Dispatcher : MonoBehaviour
         output.useMipMap = false;
         output.Create();
         Viewport.SetTexture(kernelViewport, "output", output);
-        Viewport.SetFloats("viewportCoords", viewportCoords);
+        Viewport.SetFloats("viewportCoords", resolveViewportCoords());
         Viewport.SetFloat("deltaPixel", (zoom / (float)boardWidth) / (float)output.width);
         if(boardState){ Viewport.SetTexture(kernelViewport, "board", board1); }
         else { Viewport.SetTexture(kernelViewport, "board", board0); }
@@ -165,6 +166,16 @@ public class Dispatcher : MonoBehaviour
             }
         }
         return rulesChanged;
+    }
+
+    private float[] resolveViewportCoords(){
+        float xcoord;
+        float ycoord;
+        if(centerViewport[0]){ xcoord = (viewportCoords[0] - (zoom / 2.0f)) * (1.0f / boardWidth); } 
+        else { xcoord = viewportCoords[0] * (1.0f / boardWidth); }
+        if(centerViewport[1]){ ycoord = (viewportCoords[1] - (zoom / 2.0f)) * (1.0f / boardHeight); }
+        else { ycoord = viewportCoords[1] * (1.0f / boardHeight); }
+        return new float[2]{xcoord, ycoord};
     }
 }
 

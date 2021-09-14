@@ -9,11 +9,10 @@ float deltaPixel;
 [numthreads(8,8,1)]
 void Viewport (uint3 id : SV_DispatchThreadID)
 {
-    float xcoord = fmod(viewportCoords.x + (id.x * deltaPixel), 2.0);
-    float ycoord = fmod(viewportCoords.y + (id.y * deltaPixel), 2.0);
+    float xcoord = abs(fmod(viewportCoords.x + (id.x * deltaPixel), 2.0));
+    float ycoord = abs(fmod(viewportCoords.y + (id.y * deltaPixel), 2.0));
     if(xcoord > 1.0){ xcoord = 2.0 - xcoord; }
     if(ycoord > 1.0){ ycoord = 2.0 - ycoord; }
-    //float4 pixel = tex2Dlod(board, float4(frac(viewportCoords.x + (id.x * deltaPixel)), frac(viewportCoords.y + (id.y * deltaPixel)), 0, 0));
     float4 pixel = tex2Dlod(board, float4(xcoord, ycoord, 0, 0));
     //Maybe some color effects here
     output[id.xy] = pixel;

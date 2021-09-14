@@ -87,8 +87,6 @@ public class Dispatcher : MonoBehaviour
         board1 = new RenderTexture(boardWidth, boardHeight, 24);
         board0.enableRandomWrite = true;
         board1.enableRandomWrite = true;
-        board0.wrapMode = TextureWrapMode.Repeat;
-        board1.wrapMode = TextureWrapMode.Repeat;
         board0.useMipMap = false;
         board1.useMipMap = false;
         board0.filterMode = FilterMode.Point;

@@ -19,13 +19,14 @@ public class Dispatcher : MonoBehaviour
     public int boardHeight = 512;
     public float simSpeed = 1.0f;
     public float steppingFactor = 0.1f;
-    public float zoom = 100.0f;
+    public float zoom = 100.0f; //board pixels
     public int enableTiling = 1;
     public bool[] centerViewport = {false, false};
-    public float[] viewportCoords = {0.0f, 0.0f};
+    public float[] viewportCoords = {0.0f, 0.0f};   //board coordinates
     public bool enableSim = false;
     public string rule = "B3S23";
     public int[] rules = {0, 0, 2, 3, 0, 0, 0, 0, 0};   //Conway's Game of Life rules
+    public float[] mask = {1.0f, 1.0f, 1.0f, 1.0f};
 
     private int kernelGGOL;
     private int kernelViewport;
@@ -61,6 +62,7 @@ public class Dispatcher : MonoBehaviour
             }
             GGol.SetInts("rules", PadRules(rules));
             GGol.SetFloat("steppingFactor", steppingFactor);
+            GGol.SetFloats("mask", mask);
             GGol.Dispatch(kernelGGOL, boardWidth / NUMTHREADS_X, boardHeight / NUMTHREADS_Y, 1);
         }
     }

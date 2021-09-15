@@ -8,6 +8,7 @@ float height;
 float4 deltaPixel;
 int4 rules[9];
 float steppingFactor;
+float4 mask;
 
 [numthreads(8,8,1)]     //No changy... unless you know what you are doing
 void GGOL(uint3 id : SV_DispatchThreadID)
@@ -26,7 +27,9 @@ void GGOL(uint3 id : SV_DispatchThreadID)
     neighbors += tex2Dlod(input, float4(position.x, position.y - deltaPixel.y, 0, 0));
     neighbors += tex2Dlod(input, float4(position.x + deltaPixel.x, position.y - deltaPixel.y, 0, 0));
     int count = (int)(neighbors.a); //use alpha value as the total number of neighbors
-    float stateCount = currentState.r;  //positive numbers express how long the cell ahs been alive and vice versa
+    neighbors += currentState;
+    float stateCount = currentState.r;  //positive numbers express how long the cell has been alive and vice versa
+    float runningCount = currentState.g;
     float nextState;
     //rules meaning:
     //0: alive = dead   ||  dead = dead
@@ -35,25 +38,29 @@ void GGOL(uint3 id : SV_DispatchThreadID)
     //3: alive = alive  ||  dead = alive
     if(int(currentState.a) == 0){
         if(rules[count].a == 1 || rules[count].a == 3){
-            nextState = 1.0;
             stateCount = steppingFactor;
+            runningCount += steppingFactor;
+            nextState = 1.0;
         }
         else{
-            nextState = 0.0;
             stateCount -= steppingFactor;
+            runningCount -= steppingFactor;
+            nextState = 0.0;
         }
     } 
     else {
         if(rules[count].a >= 2.0){
-            nextState = 1.0;
             stateCount += steppingFactor;
+            runningCount += steppingFactor;
+            nextState = 1.0;
         }
         else{
-            nextState = 0.0;
             stateCount = -steppingFactor;
+            runningCount -= steppingFactor;
+            nextState = 0.0;
         }
     }
-    result[id.xy] = float4(stateCount, nextState, nextState, nextState);
+    result[id.xy] = float4(stateCount * mask.r, runningCount * mask.g, (neighbors.r / 9) * mask.b, nextState * mask.a);
 }
 
 

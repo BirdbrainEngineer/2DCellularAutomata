@@ -19,6 +19,5 @@ void Viewport (uint3 id : SV_DispatchThreadID)
         if(ycoord > 1.0){ ycoord = 2.0 - ycoord; }
     }
     float4 pixel = tex2Dlod(board, float4(xcoord, ycoord, 0, 0));
-    //Maybe some color effects here
     output[id.xy] = pixel;
 }

@@ -1,0 +1,21 @@
+
+#pragma kernel Vanilla
+#pragma kernel Raw
+
+sampler2D input;
+RWTexture2D<float4> output;
+float4 colors[3];
+float2 deltaPixel;
+
+[numthreads(8,8,1)]
+void Vanilla (uint3 id : SV_DispatchThreadID)
+{
+    float4 pixel = tex2Dlod(input, float4(id.x * deltaPixel.x, id.y * deltaPixel.y, 0, 0));
+    output[id.xy] = float4(pixel.a, pixel.a, pixel.a, pixel.a);
+}
+
+[numthreads(8,8,1)]
+void Raw (uint3 id : SV_DispatchThreadID)
+{
+    output[id.xy] = tex2Dlod(input, float4(id.x * deltaPixel.x, id.y * deltaPixel.y, 0, 0));
+}

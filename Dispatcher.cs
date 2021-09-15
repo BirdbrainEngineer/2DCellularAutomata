@@ -8,11 +8,13 @@ public class Dispatcher : MonoBehaviour
     private static int NUMTHREADS_Y = 8;   //nor this...           (Unless you know what you are doing of course)
 
     public ComputeShader GGol;
+    public ComputeShader Colorer;
     public ComputeShader Viewport;
 
     public Texture2D input;
     private RenderTexture board0;
     private RenderTexture board1;
+    private RenderTexture colored;
     private RenderTexture output;
 
     public int boardWidth = 512;
@@ -25,24 +27,26 @@ public class Dispatcher : MonoBehaviour
     public float[] viewportCoords = {0.0f, 0.0f};   //board coordinates
     public bool enableSim = false;
     public string rule = "B3S23";
-    public int[] rules = {0, 0, 2, 3, 0, 0, 0, 0, 0};   //Conway's Game of Life rules
     public float[] mask = {1.0f, 1.0f, 1.0f, 1.0f};
+    public string colorScheme = "Vanilla";
+    public float[] colors = new float[12];
+
+    private Dictionary<string, int> kernelColorer = new Dictionary<string, int>();
 
     private int kernelGGOL;
     private int kernelViewport;
     private float nextUpdate;
     private bool boardState = false;
+    private int[] rules = {0, 0, 2, 3, 0, 0, 0, 0, 0};   //Conway's Game of Life rules
 
     void Start()
     {
-        kernelGGOL = GGol.FindKernel("GGOL");
-        kernelViewport = Viewport.FindKernel("Viewport");
         CreateTextures();
         if(input != null && input.width == board0.width && input.height == board0.height) { 
             Graphics.Blit(input, board0);
             Graphics.Blit(input, board1);
         } else { print("Could not use input image - dimensions differ"); }
-        StartGGOL();
+        StartShaders();
         nextUpdate = Time.time + simSpeed;
     }
 
@@ -68,25 +72,41 @@ public class Dispatcher : MonoBehaviour
     }
 
     private void OnRenderImage(RenderTexture src, RenderTexture dest){
-        output.Release();
-        output = new RenderTexture(Screen.width, Screen.height, 24);
-        output.enableRandomWrite = true;
-        output.useMipMap = false;
-        output.Create();
-        Viewport.SetTexture(kernelViewport, "output", output);
+        if(output.width != Screen.width || output.height != Screen.height){
+            output.Release();
+            colored.Release();
+            output = new RenderTexture(Screen.width, Screen.height, 24);
+            colored = new RenderTexture(Screen.width, Screen.height, 24);
+            output.enableRandomWrite = true;
+            colored.enableRandomWrite = true;
+            output.useMipMap = false;
+            colored.useMipMap = false;
+            output.Create();
+            colored.Create();
+        }
+        if(boardState){ Viewport.SetTexture(kernelViewport, "board", board1); }
+        else { Viewport.SetTexture(kernelViewport, "board", board0); }
         Viewport.SetFloats("viewportCoords", resolveViewportCoords());
         Viewport.SetFloat("deltaPixel", (zoom / (float)boardWidth) / (float)output.width);
         Viewport.SetInt("enableTiling", enableTiling);
-        if(boardState){ Viewport.SetTexture(kernelViewport, "board", board1); }
-        else { Viewport.SetTexture(kernelViewport, "board", board0); }
+        Viewport.SetTexture(kernelViewport, "output", output);
         Viewport.Dispatch(kernelViewport, output.width / NUMTHREADS_X, output.height / NUMTHREADS_Y, 1);
-        Graphics.Blit(output, dest);
+
+        int kernel = kernelColorer[colorScheme];
+        Colorer.SetFloats("colors", colors);
+        Colorer.SetFloats("deltaPixel", new float[2]{1.0f / colored.width, 1.0f / colored.height});
+        Colorer.SetTexture(kernel, "input", output);
+        Colorer.SetTexture(kernel, "output", colored);
+        Colorer.Dispatch(kernel, colored.width / NUMTHREADS_X, colored.height / NUMTHREADS_Y, 1);
+
+        Graphics.Blit(colored, dest);
     }
 
     private void CreateTextures(){
         board0 = new RenderTexture(boardWidth, boardHeight, 24);
         board1 = new RenderTexture(boardWidth, boardHeight, 24);
-        output = new RenderTexture(Screen.width, Screen.height, 24);
+        colored = new RenderTexture(1, 1, 24);
+        output = new RenderTexture(1, 1, 24);
         board0.enableRandomWrite = true;
         board1.enableRandomWrite = true;
         board0.useMipMap = false;
@@ -95,14 +115,21 @@ public class Dispatcher : MonoBehaviour
         board1.filterMode = FilterMode.Point;
         board0.Create();
         board1.Create();
+        colored.Create();
         output.Create();
     }
 
-    private void StartGGOL(){
+    private void StartShaders(){
+        
         float[] deltaPixel = {1.0f / (float)boardWidth, 1.0f / (float)boardHeight, 0.0f, 0.0f};
         GGol.SetFloats("deltaPixel", deltaPixel);
         GGol.SetFloat("width", (float)boardWidth);
         GGol.SetFloat("height", (float)boardHeight);
+        kernelGGOL = GGol.FindKernel("GGOL");
+        kernelViewport = Viewport.FindKernel("Viewport");
+
+        kernelColorer.Add("Vanilla", Colorer.FindKernel("Vanilla"));
+        kernelColorer.Add("Raw", Colorer.FindKernel("Raw"));
     }
 
     private int[] PadRules(int[] rulesIn){
@@ -136,11 +163,11 @@ public class Dispatcher : MonoBehaviour
                 survive = true;
                 continue;
             }
-        //rules meaning (indexed by number of neighbor cells alive):
-        //0: alive = dead   ||  dead = dead
-        //1: alive = dead   ||  dead = alive
-        //2: alive = alive  ||  dead = dead
-        //3: alive = alive  ||  dead = alive
+            //rules meaning (indexed by number of neighbor cells alive):
+            //0: alive = dead   ||  dead = dead
+            //1: alive = dead   ||  dead = alive
+            //2: alive = alive  ||  dead = dead
+            //3: alive = alive  ||  dead = alive
             int num = (int)char.GetNumericValue(character);
             if(num < 0 || num > 8){
                 print("Malformed rules!");

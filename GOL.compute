@@ -28,8 +28,8 @@ void GGOL(uint3 id : SV_DispatchThreadID)
     neighbors += tex2Dlod(input, float4(position.x + deltaPixel.x, position.y - deltaPixel.y, 0, 0));
     int count = (int)(neighbors.a); //use alpha value as the total number of neighbors
     neighbors += currentState;
-    float stateCount = currentState.r;  //positive numbers express how long the cell has been alive and vice versa
-    float runningCount = currentState.g;
+    float aliveCount = currentState.r;  //positive numbers express how long the cell has been alive and vice versa
+    float deadCount = currentState.g;
     float nextState;
     //rules meaning:
     //0: alive = dead   ||  dead = dead
@@ -38,29 +38,27 @@ void GGOL(uint3 id : SV_DispatchThreadID)
     //3: alive = alive  ||  dead = alive
     if(int(currentState.a) == 0){
         if(rules[count].a == 1 || rules[count].a == 3){
-            stateCount = steppingFactor;
-            runningCount += steppingFactor;
             nextState = 1.0;
+            deadCount = 0.0;
+            aliveCount = steppingFactor;
         }
         else{
-            stateCount -= steppingFactor;
-            runningCount -= steppingFactor;
             nextState = 0.0;
+            deadCount += steppingFactor;
         }
     } 
     else {
         if(rules[count].a >= 2.0){
-            stateCount += steppingFactor;
-            runningCount += steppingFactor;
             nextState = 1.0;
+            aliveCount += steppingFactor;
         }
         else{
-            stateCount = -steppingFactor;
-            runningCount -= steppingFactor;
             nextState = 0.0;
+            aliveCount = 0.0;
+            deadCount = steppingFactor;
         }
     }
-    result[id.xy] = float4(stateCount * mask.r, runningCount * mask.g, (neighbors.r / 9) * mask.b, nextState * mask.a);
+    result[id.xy] = float4(aliveCount * mask.r, deadCount * mask.g, (neighbors.r / neighbors.g) * mask.b, nextState * mask.a);
 }
 
 

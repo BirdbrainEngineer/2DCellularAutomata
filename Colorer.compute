@@ -1,6 +1,8 @@
 
 #pragma kernel Vanilla
 #pragma kernel Raw
+#pragma kernel InterpolateLinear
+#pragma kernel Ratio
 
 sampler2D input;
 RWTexture2D<float4> output;
@@ -18,4 +20,26 @@ void Vanilla (uint3 id : SV_DispatchThreadID)
 void Raw (uint3 id : SV_DispatchThreadID)
 {
     output[id.xy] = tex2Dlod(input, float4(id.x * deltaPixel.x, id.y * deltaPixel.y, 0, 0));
+}
+
+[numthreads(8,8,1)]
+void InterpolateLinear (uint3 id : SV_DispatchThreadID)
+{
+    float4 pixel = tex2Dlod(input, float4(id.x * deltaPixel.x, id.y * deltaPixel.y, 0, 0));
+    float weightAlive = clamp(pixel[0], 0.0, 1.0);
+    float weightDead = clamp(pixel[1], 0.0, 1.0);
+    float4 alive = colors[0];
+    float4 born = colors[1];
+    float4 dead = colors[2];
+    pixel = float4(lerp(born, alive, float4(weightAlive, weightAlive, weightAlive, weightAlive)));
+    pixel = float4(lerp(pixel, dead, float4(weightDead, weightDead, weightDead, weightDead)));
+    output[id.xy] = pixel;
+}
+
+[numthreads(8,8,1)]
+void Ratio (uint3 id : SV_DispatchThreadID)
+{
+    float4 pixel = tex2Dlod(input, float4(id.x * deltaPixel.x, id.y * deltaPixel.y, 0, 0));
+    float4 color = colors[0];
+    output[id.xy] = float4(color.r * pixel[2], color.g * pixel[2], color.b * pixel[2], 1.0);
 }

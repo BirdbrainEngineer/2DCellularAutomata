@@ -29,7 +29,7 @@ public class Dispatcher : MonoBehaviour
     public string rule = "B3S23";
     public float[] mask = {1.0f, 1.0f, 1.0f, 1.0f};
     public string colorScheme = "Vanilla";
-    public float[] colors = new float[12];
+    public float[] colors = {1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0};
 
     private Dictionary<string, int> kernelColorer = new Dictionary<string, int>();
 
@@ -93,6 +93,7 @@ public class Dispatcher : MonoBehaviour
         Viewport.Dispatch(kernelViewport, output.width / NUMTHREADS_X, output.height / NUMTHREADS_Y, 1);
 
         int kernel = kernelColorer[colorScheme];
+        //foreach(float number in colors) {print(number);}
         Colorer.SetFloats("colors", colors);
         Colorer.SetFloats("deltaPixel", new float[2]{1.0f / colored.width, 1.0f / colored.height});
         Colorer.SetTexture(kernel, "input", output);
@@ -130,6 +131,8 @@ public class Dispatcher : MonoBehaviour
 
         kernelColorer.Add("Vanilla", Colorer.FindKernel("Vanilla"));
         kernelColorer.Add("Raw", Colorer.FindKernel("Raw"));
+        kernelColorer.Add("Lerp", Colorer.FindKernel("InterpolateLinear"));
+        kernelColorer.Add("Ratio", Colorer.FindKernel("Ratio"));
     }
 
     private int[] PadRules(int[] rulesIn){

@@ -93,7 +93,6 @@ public class Dispatcher : MonoBehaviour
         Viewport.Dispatch(kernelViewport, output.width / NUMTHREADS_X, output.height / NUMTHREADS_Y, 1);
 
         int kernel = kernelColorer[colorScheme];
-        //foreach(float number in colors) {print(number);}
         Colorer.SetFloats("colors", colors);
         Colorer.SetFloats("deltaPixel", new float[2]{1.0f / colored.width, 1.0f / colored.height});
         Colorer.SetTexture(kernel, "input", output);

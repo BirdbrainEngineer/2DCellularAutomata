@@ -47,15 +47,14 @@ public class AnimationFlow : MonoBehaviour
             if(currentEvent == null) { currentEvent = animationSequence[animCount]; }
             if(currentEvent.timestamp <= Time.time - animationStartTime) {
                 currentEvent.func(this, dispatcherRef, currentEvent.duration, currentEvent.parameters, currentEvent.text);
-                print("executedanimation");
                 animCount++;
                 currentEvent = animationSequence[animCount];
             } 
             else { break; }
         }
     }
-
-    static void SetViewport(AnimationFlow animator, Dispatcher dispatcher, float duration, float[] parameters, string text){    //params: viewportCoords[2], zoom, centerviewport[2]
+    //params: viewportCoords[2], zoom, centerviewport[2]
+    static void SetViewport(AnimationFlow animator, Dispatcher dispatcher, float duration, float[] parameters, string text){    
         dispatcher.centerViewport[0] = parameters[3] < 0.0f ? dispatcher.centerViewport[0] : parameters[3] >= 1.0f ? true : false;
         dispatcher.centerViewport[1] = parameters[4] < 0.0f ? dispatcher.centerViewport[1] : parameters[4] >= 1.0f ? true : false;
         if(duration >= 0.0f) { animator.StartCoroutine(SetViewportLerp(dispatcher, duration, parameters)); }
@@ -65,8 +64,8 @@ public class AnimationFlow : MonoBehaviour
             if(parameters[2] > 0.0f) { dispatcher.zoom = parameters[2]; }
         }     
     }
-
-    static IEnumerator SetViewportLerp(Dispatcher dispatcher, float duration, float[] parameters){    //params: viewportCoords[2], zoom, centerviewport[2]
+    //params: viewportCoords[2], zoom, centerviewport[2]
+    static IEnumerator SetViewportLerp(Dispatcher dispatcher, float duration, float[] parameters){    
         float startTime = Time.time;
         float[] startViewportCoords = new float[2]{dispatcher.viewportCoords[0], dispatcher.viewportCoords[1]};
         float startZoom = dispatcher.zoom;
@@ -74,18 +73,18 @@ public class AnimationFlow : MonoBehaviour
             float fac = duration / (Time.time - startTime);
             if(parameters[0] >= 0.0f){ dispatcher.viewportCoords[0] = Mathf.Lerp(startViewportCoords[0], parameters[0], fac); }
             if(parameters[1] >= 0.0f){ dispatcher.viewportCoords[1] = Mathf.Lerp(startViewportCoords[1], parameters[1], fac); }
-            if(parameters[2] > 0.0f) { Mathf.Lerp(startZoom, parameters[2], fac); }
+            if(parameters[2] > 0.0f) { dispatcher.zoom = Mathf.Lerp(startZoom, parameters[2], fac); }
             yield return null;
         }
         if(parameters[0] >= 0.0f) { dispatcher.viewportCoords[0] = parameters[0]; }
         if(parameters[1] >= 0.0f) { dispatcher.viewportCoords[1] = parameters[1]; }
         if(parameters[2] > 0.0f) { dispatcher.zoom = parameters[2]; }
     }
-
+    //params: NaN
     static void SetRule(AnimationFlow animator, Dispatcher dispatcher, float duration, float[] parameters, string text){
         dispatcher.rule = text;
     }
-
+    //params NaN
     static void EnableSim(AnimationFlow animator, Dispatcher dispatcher, float duration, float[] parameters, string text){
         if(parameters[0] > 0.0f){ dispatcher.enableSim = parameters[0] < 0.5f ? false : true; }
     }
@@ -94,7 +93,7 @@ public class AnimationFlow : MonoBehaviour
     {
         new AnimEvent(0.0f, -1.0f, SetViewport, new float[]{-1.0f, -1.0f, 300.0f, -1.0f, -1.0f}, ""),
         new AnimEvent(2.0f, -1.0f, EnableSim, new float[]{1.0f}, ""),
-        new AnimEvent(4.0f, -1.0f, SetViewport, new float[]{200.0f, 100.0f, 200.0f, -1.0f, -1.0f}, ""),
+        new AnimEvent(4.0f, 2.0f, SetViewport, new float[]{200.0f, 100.0f, 200.0f, -1.0f, -1.0f}, ""),
         new AnimEvent(6.0f, -1.0f, SetRule, new float[]{}, "B2"),
         new AnimEvent(99999.0f, -1.0f, SetRule, new float[]{}, ""), //this is just pure jank lol
     };

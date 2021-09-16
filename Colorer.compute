@@ -19,7 +19,12 @@ void Vanilla (uint3 id : SV_DispatchThreadID)
 [numthreads(8,8,1)]
 void Raw (uint3 id : SV_DispatchThreadID)
 {
-    output[id.xy] = tex2Dlod(input, float4(id.x * deltaPixel.x, id.y * deltaPixel.y, 0, 0));
+    float4 pixel = tex2Dlod(input, float4(id.x * deltaPixel.x, id.y * deltaPixel.y, 0, 0));
+    float red = pixel.r * colors[0].r + pixel.g * colors[1].r + pixel.b * colors[2].r;
+    float green = pixel.r * colors[0].g + pixel.g * colors[1].g + pixel.b * colors[2].g;
+    float blue = pixel.r * colors[0].b + pixel.g * colors[1].b + pixel.b * colors[2].b;
+    float alpha = 1.0;
+    output[id.xy] = float4(red, green, blue, alpha);
 }
 
 [numthreads(8,8,1)]

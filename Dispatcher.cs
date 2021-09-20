@@ -7,11 +7,12 @@ public class Dispatcher : MonoBehaviour
     private static int NUMTHREADS_X = 8;   //No changy this...
     private static int NUMTHREADS_Y = 8;   //nor this...           (Unless you know what you are doing of course)
 
+    public Texture2D input;
+
     public ComputeShader GGol;
     public ComputeShader Colorer;
     public ComputeShader Viewport;
 
-    public Texture2D input;
     private RenderTexture board0;
     private RenderTexture board1;
     private RenderTexture colored;
@@ -29,7 +30,7 @@ public class Dispatcher : MonoBehaviour
     public string rule = "B3S23";
     public float[] mask = {1.0f, 1.0f, 1.0f, 1.0f};
     public string colorScheme = "Vanilla";
-    public float[] colors = {1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0};
+    public float[] colors = {1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1};
 
     private Dictionary<string, int> kernelColorer = new Dictionary<string, int>();
 
@@ -47,12 +48,13 @@ public class Dispatcher : MonoBehaviour
             Graphics.Blit(input, board1);
         } else { print("Could not use input image - dimensions differ"); }
         StartShaders();
-        nextUpdate = Time.time + simSpeed;
+        nextUpdate = Time.time;
     }
 
     void Update(){
+        if(!enableSim) { nextUpdate = Time.time; }
         if(enableSim && nextUpdate <= Time.time) {
-            nextUpdate = Time.time + simSpeed;
+            nextUpdate += simSpeed;
             bool newRules = ParseRules();
             if(boardState){
                 GGol.SetTexture(kernelGGOL, "result", board0);

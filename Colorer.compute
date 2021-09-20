@@ -13,7 +13,7 @@ float2 deltaPixel;
 void Vanilla (uint3 id : SV_DispatchThreadID)
 {
     float4 pixel = tex2Dlod(input, float4(id.x * deltaPixel.x, id.y * deltaPixel.y, 0, 0));
-    output[id.xy] = float4(pixel.a, pixel.a, pixel.a, pixel.a);
+    output[id.xy] = float4(colors[0].r * pixel.a, colors[0].g * pixel.a, colors[0].b * pixel.a, pixel.a);
 }
 
 [numthreads(8,8,1)]

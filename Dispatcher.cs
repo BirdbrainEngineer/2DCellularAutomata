@@ -52,24 +52,28 @@ public class Dispatcher : MonoBehaviour
     }
 
     void Update(){
-        if(!enableSim) { nextUpdate = Time.time; }
-        if(enableSim && nextUpdate <= Time.time) {
-            nextUpdate += simSpeed;
-            bool newRules = ParseRules();
-            if(boardState){
-                GGol.SetTexture(kernelGGOL, "result", board0);
-                GGol.SetTexture(kernelGGOL, "input", board1);
-                boardState = false;
+        if(enableSim){
+            while(nextUpdate <= Time.time) {
+                nextUpdate += Mathf.Abs(simSpeed);
+                bool newRules = ParseRules();
+                if(boardState){
+                    GGol.SetTexture(kernelGGOL, "result", board0);
+                    GGol.SetTexture(kernelGGOL, "input", board1);
+                    boardState = false;
+                }
+                else {
+                    GGol.SetTexture(kernelGGOL, "result", board1);
+                    GGol.SetTexture(kernelGGOL, "input", board0);
+                    boardState = true;
+                }
+                GGol.SetInts("rules", PadRules(rules));
+                GGol.SetFloat("steppingFactor", steppingFactor);
+                GGol.SetFloats("mask", mask);
+                GGol.Dispatch(kernelGGOL, boardWidth / NUMTHREADS_X, boardHeight / NUMTHREADS_Y, 1);
             }
-            else {
-                GGol.SetTexture(kernelGGOL, "result", board1);
-                GGol.SetTexture(kernelGGOL, "input", board0);
-                boardState = true;
-            }
-            GGol.SetInts("rules", PadRules(rules));
-            GGol.SetFloat("steppingFactor", steppingFactor);
-            GGol.SetFloats("mask", mask);
-            GGol.Dispatch(kernelGGOL, boardWidth / NUMTHREADS_X, boardHeight / NUMTHREADS_Y, 1);
+        }
+        else {
+            nextUpdate = Time.time;
         }
     }
 

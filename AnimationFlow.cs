@@ -253,13 +253,13 @@ public class AnimationFlow : MonoBehaviour
 
 
 
-    AnimEvent[] sequence1 = new AnimEvent[]
+    AnimEvent[] sequence0 = new AnimEvent[]
     {
         new AnimEvent(2.0f, EnableSim, new float[]{1}, ""),
         new AnimEvent(99999.0f, SetRule, new float[]{}, ""),
     };
 
-    AnimEvent[] sequence0 = new AnimEvent[]
+    AnimEvent[] sequence1 = new AnimEvent[]
     {
         new AnimEvent(0.0f, SetViewport, new float[]{-1, 0, -1, -1, 300.0f}, ""),
         new AnimEvent(0.0f, SetSpeed, new float[]{-1, 0, 0.1f}, ""),

@@ -42,11 +42,14 @@ public class Dispatcher : MonoBehaviour
 
     void Start()
     {
+        if(input == null) { print("no input image!"); }
+        else {
+            boardWidth = input.width;
+            boardHeight = input.height;
+        }
         CreateTextures();
-        if(input != null && input.width == board0.width && input.height == board0.height) { 
-            Graphics.Blit(input, board0);
-            Graphics.Blit(input, board1);
-        } else { print("Could not use input image - dimensions differ"); }
+        Graphics.Blit(input, board0);
+        Graphics.Blit(input, board1);
         StartShaders();
         nextUpdate = Time.time;
     }

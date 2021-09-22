@@ -45,12 +45,14 @@ void GGOL(uint3 id : SV_DispatchThreadID)
         else{
             nextState = 0.0;
             deadCount += steppingFactor;
+            aliveCount = 0.0;
         }
     } 
     else {
         if(rules[count].a >= 2.0){
             nextState = 1.0;
             aliveCount += steppingFactor;
+            deadCount = 0.0;
         }
         else{
             nextState = 0.0;

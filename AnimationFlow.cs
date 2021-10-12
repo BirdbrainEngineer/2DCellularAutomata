@@ -1,3 +1,6 @@
+//Attach this script to any object except the Main Camera
+//Attach the Main Camera object as simulation GameObject in the inspector
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -31,7 +34,7 @@ public class AnimationFlow : MonoBehaviour
 
     void Start()
     {
-        animationSequence = sequence0;
+        animationSequence = featuressequence;
 
         dispatcherRef = simulation.GetComponent<Dispatcher>();
         if(dispatcherRef == null) { print("No simulation dispatcher found!"); }  
@@ -262,8 +265,49 @@ public class AnimationFlow : MonoBehaviour
     //SetColors: (duration), type, channel, color[4]
     //Vanilla, Lerp, Raw, Ratio, 
 
+    //default sequence
+    AnimEvent[] emptysequence = new AnimEvent[]{
+        new AnimEvent(99999.0f, SetRule, new float[]{}, ""),
+    };
+
+    //endscreen
+    AnimEvent[] featuressequence = new AnimEvent[]
+    {
+        //enable viewport centering
+        new AnimEvent(0.0f, SetRule, new float[]{}, "S23B3"),
+        new AnimEvent(0.0f, SetSpeed, new float[]{-1, 0, 1.0f}, ""),
+        new AnimEvent(0.0f, SetStep, new float[]{-1, 0, 1.0f}, ""),
+        new AnimEvent(0.0f, SetColorScheme, new float[]{}, "Vanilla"),
+        new AnimEvent(0.0f, SetColor, new float[]{-1, 1, 0, 1.0f, 1.0f, 1.0f, 1.0f}, ""),
+        new AnimEvent(0.0f, SetColor, new float[]{-1, 1, 1, 0.0f, 0.0f, 0.0f, 1.0f}, ""),
+        new AnimEvent(0.0f, SetColor, new float[]{-1, 1, 2, 0.0f, 0.0f, 0.0f, 1.0f}, ""),
+        new AnimEvent(0.0f, SetViewport, new float[]{-1, 0, 180, 180, 128}, ""),
+        new AnimEvent(1.0f, EnableSim, new float[]{1}, ""),
+        new AnimEvent(5.0f, SetSpeed, new float[]{-1, 0, 0.05f}, ""),
+        new AnimEvent(9.0f, SetColor, new float[]{-1, 1, 0, 1.0f, 1.0f, 0.0f, 1.0f}, ""),
+        new AnimEvent(9.0f, SetColor, new float[]{-1, 1, 1, 0.2f, 0.0f, 0.0f, 1.0f}, ""),
+        new AnimEvent(9.0f, SetColor, new float[]{-1, 1, 2, 0.2f, 0.0f, 0.0f, 1.0f}, ""),
+        new AnimEvent(99999.0f, SetRule, new float[]{}, ""),
+    };
+
+    //endscreen
+    AnimEvent[] endsequence = new AnimEvent[]
+    {
+        //enable viewport centering
+        new AnimEvent(0.0f, SetRule, new float[]{}, "S23B3"),
+        new AnimEvent(0.0f, SetSpeed, new float[]{-1, 0, 0.2f}, ""),
+        new AnimEvent(0.0f, SetStep, new float[]{-1, 0, 1.0f}, ""),
+        new AnimEvent(0.0f, SetColorScheme, new float[]{}, "Lerp"),
+        new AnimEvent(0.0f, SetColor, new float[]{-1, 1, 0, 1.0f, 1.0f, 1.0f, 1.0f}, ""),
+        new AnimEvent(0.0f, SetColor, new float[]{-1, 1, 1, 0.7f, 0.7f, 1.0f, 1.0f}, ""),
+        new AnimEvent(0.0f, SetColor, new float[]{-1, 1, 2, 0.1f, 0.0f, 0.1f, 1.0f}, ""),
+        new AnimEvent(0.0f, SetViewport, new float[]{-1, 0, 23, 13.5f, 16}, ""),
+        new AnimEvent(1.0f, EnableSim, new float[]{1}, ""),
+        new AnimEvent(99999.0f, SetRule, new float[]{}, ""),
+    };
+
     //randomsequence2
-    AnimEvent[] sequence0 = new AnimEvent[]
+    AnimEvent[] randomsequence2 = new AnimEvent[]
     {
         //enable viewport centering
         new AnimEvent(0.0f, SetRule, new float[]{}, "S34678B3678"),
@@ -305,9 +349,6 @@ public class AnimationFlow : MonoBehaviour
         new AnimEvent(1.0f + 24 * spb, SetColor, new float[]{spb * 4, 1, 2, 0.15f, 0.0f, 0.15f, 1.0f}, ""),
         new AnimEvent(1.0f + 24 * spb, SetSpeed, new float[]{-1, 0, 0.02f}, ""),
         new AnimEvent(1.0f + 28 * spb, SetRule, new float[]{}, "B3S23"),
-        new AnimEvent(1.0f + 28 * spb, SetSpeed, new float[]{spb * 8, 1, 1.0f}, ""),
-        new AnimEvent(1.0f + 28 * spb, SetStep, new float[]{spb * 8, 1, 1.0f}, ""),
-        new AnimEvent(1.0f + 28 * spb, SetViewport, new float[]{spb * 8, 1, 1107, 888, 15}, ""),
 
         new AnimEvent(99999.0f, SetRule, new float[]{}, ""),
     };
@@ -489,21 +530,12 @@ public class AnimationFlow : MonoBehaviour
         new AnimEvent(0.0f, SetColor, new float[]{-1, 0, 2, 0.0f, 0.0f, 0.0f, 1.0f}, ""),
         new AnimEvent(0.0f, SetViewport, new float[]{-1, 0, 1952, 4263, 10}, ""),
         new AnimEvent(0.0f, EnableSim, new float[]{1}, ""),
-
         new AnimEvent(1.0f, SetStep, new float[]{22.0f, 1, 0.1f}, ""),
         new AnimEvent(1.0f, SetColor, new float[]{11.8f, 1, 0, 1.0f, 1.0f, 1.0f, 1.0f}, ""),
         new AnimEvent(1.0f, SetColor, new float[]{11.8f, 1, 1, 0.7f, 0.7f, 1.0f, 1.0f}, ""),
         new AnimEvent(1.0f, SetColor, new float[]{11.8f, 1, 2, 0.1f, 0.0f, 0.1f, 1.0f}, ""),
         new AnimEvent(1.0f, SetViewport, new float[]{13.0f, 2, 3820, 5875, 7650}, ""),
-        new AnimEvent(4.0f, SetSpeed, new float[]{10.0f, 2, 0.015f}, ""),
-        new AnimEvent(14.0f - spb, SetColor, new float[]{spb, 2, 0, 1.0f, 1.0f, 1.0f, 1.0f}, ""),
-        new AnimEvent(14.0f - spb, SetColor, new float[]{spb, 2, 1, 0.8f, 0.9f, 0.95f, 1.0f}, ""),
-        new AnimEvent(14.0f - spb, SetColor, new float[]{spb, 2, 2, 0.6f, 0.8f, 0.8f, 1.0f}, ""),
-        new AnimEvent(14.0f, SetRule, new float[]{}, "B23S34"),
-        //S245B368
-        new AnimEvent(14.0f, SetColor, new float[]{1.0f, 1, 0, 0.6f, 0.1f, 0.2f, 1.0f}, ""),
-        new AnimEvent(14.0f, SetColor, new float[]{3.0f, 1, 1, 0.6f, 0.1f, 0.2f, 1.0f}, ""),
-        new AnimEvent(14.0f, SetColor, new float[]{0.3f, 1, 2, 0.0f, 0.0f, 0.0f, 1.0f}, ""),
+        
 
         new AnimEvent(99999.0f, SetRule, new float[]{}, "Simulation is ended(crashed) here"),
     };

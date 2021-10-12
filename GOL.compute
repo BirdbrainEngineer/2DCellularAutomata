@@ -28,7 +28,7 @@ void GGOL(uint3 id : SV_DispatchThreadID)
     neighbors += tex2Dlod(input, float4(position.x + deltaPixel.x, position.y - deltaPixel.y, 0, 0));
     int count = (int)(neighbors.a); //use alpha value as the total number of neighbors
     neighbors += currentState;
-    float aliveCount = currentState.r;  //positive numbers express how long the cell has been alive and vice versa
+    float aliveCount = currentState.r;
     float deadCount = currentState.g;
     float nextState;
     //rules meaning:

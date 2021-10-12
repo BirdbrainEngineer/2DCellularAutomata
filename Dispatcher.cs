@@ -1,3 +1,8 @@
+//Attach this script to the Main Camera
+//Attach GOL.compute to GGol ComputeShader in the inspector
+//Attach Colorer.compute to Colorer ComputeShader in the inspector
+//Attach Biewport.compute to Viewport ComputeShader in the inspector
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
